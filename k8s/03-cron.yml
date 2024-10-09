@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: merge-marshal
+  namespace: cron
+spec:
+  schedule: "0 10 * * *"
+  timeZone: "Asia/Istanbul"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: merge-marshal
+              image: your-docker-registry/merge-marshal:latest
+              volumeMounts:
+                - name: author-mapping-volume
+                  mountPath: /config/author_mapping.yml
+                  subPath: author_mapping.yml
+              envFrom:
+                - secretRef:
+                    name: merge-marshal
+              env:
+                - name: GITHUB_ORGANIZATION_NAME
+                  value: "your-github-org-name"
+                - name: DEFAULT_SLACK_EMAIL
+                  value: "default@example.com"
+          volumes:
+            - name: author-mapping-volume
+              configMap:
+                name: merge-marshal-author-mapping
+          restartPolicy: OnFailure
