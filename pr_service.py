@@ -10,11 +10,18 @@ class PRService:
     def __init__(self, github_service: GitHubService, notification_service: NotificationService):
         self.github_service = github_service
         self.notification_service = notification_service
+        self.batch_size = 5
 
     async def report_prs(self, organization_name: str):
         repos = await self.github_service.list_private_repos(organization_name)
-        async_tasks = [self.__get_filtered_prs(repo) for repo in repos]
-        results = await asyncio.gather(*async_tasks)
+        prs_semaphore = asyncio.Semaphore(self.batch_size)
+
+        async def get_prs(repo):
+            async with prs_semaphore:
+                return await self.__get_filtered_prs(repo)
+
+        tasks = [get_prs(repo) for repo in repos]
+        results = await asyncio.gather(*tasks)
         for repo, filtered_prs in zip(repos, results):
             for pr in filtered_prs:
                 created_at: datetime = pr['created_at']
@@ -28,11 +35,16 @@ class PRService:
         now = datetime.now()
         three_days_ago = now - timedelta(days=3)
         filtered_prs = []
+        review_semaphore = asyncio.Semaphore(self.batch_size)
+
+        async def get_pr_reviews(pr_number):
+            async with review_semaphore:
+                return await self.github_service.get_pr_reviews(repo, pr_number)
 
         for pr in prs:
             created_at = datetime.strptime(pr["created_at"], "%Y-%m-%dT%H:%M:%SZ")
             if created_at < three_days_ago:
-                reviews = await self.github_service.get_pr_reviews(repo, pr['number'])
+                reviews = await asyncio.create_task(get_pr_reviews(pr['number']))
                 approvals = sum(1 for review in reviews if review["state"] == "APPROVED")
                 if approvals >= 1:
                     days_open = (now - created_at).days

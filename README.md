@@ -12,6 +12,7 @@ Currently, on GitHub integration settings, you can only notify users via public/
 - Python 3.11
 - slack-sdk 3.33.1
 - PyYAML 6.0.2
+- aiohttp 3.10.9
 
 ## Usage
 
