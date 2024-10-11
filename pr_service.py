@@ -42,6 +42,8 @@ class PRService:
                 return await self.github_service.get_pr_reviews(repo, pr_number)
 
         for pr in prs:
+            if pr["draft"]:
+                continue
             created_at = datetime.strptime(pr["created_at"], "%Y-%m-%dT%H:%M:%SZ")
             if created_at < three_days_ago:
                 reviews = await asyncio.create_task(get_pr_reviews(pr['number']))
