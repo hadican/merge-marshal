@@ -28,7 +28,7 @@ class GitHubService:
         url = f"{self.BASE_URL}/orgs/{org_name}/repos"
         params = {"type": "private", "per_page": 100}
         repos = await self.get_data(url, params)
-        return [{"name": repo["name"], "full_name": repo["full_name"]} for repo in repos]
+        return [{"name": repo["name"], "full_name": repo["full_name"]} for repo in repos if repo["archived"] is False]
 
     async def get_open_prs(self, repo: Dict[str, str]) -> List[Dict[str, Any]]:
         url = f"{self.BASE_URL}/repos/{repo['full_name']}/pulls"
