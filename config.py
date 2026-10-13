@@ -9,6 +9,7 @@ class Config:
         self.github_token = self._get_env_variable('GITHUB_TOKEN')
         self.organization_name = self._get_env_variable('GITHUB_ORGANIZATION_NAME')
         self.default_slack_email = self._get_env_variable('DEFAULT_SLACK_EMAIL')
+        self.ignore_users = self._get_list_env_variable('IGNORE_USERS')
         self.author_mapping = self._load_author_mapping('/config/author_mapping.yml')
 
     @staticmethod
@@ -17,6 +18,11 @@ class Config:
         if not value:
             raise ValueError(f"{name} environment variable not set")
         return value
+
+    @staticmethod
+    def _get_list_env_variable(name):
+        value = os.environ.get(name, '')
+        return [item.strip() for item in value.split(',') if item.strip()]
 
     @staticmethod
     def _load_author_mapping(file_path):

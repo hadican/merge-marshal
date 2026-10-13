@@ -12,7 +12,7 @@ async def main():
     slack_service = SlackService(config.slack_token)
     github_service = GitHubService(config.github_token)
     notification_service = NotificationService(slack_service, config)
-    pr_service = PRService(github_service, notification_service)
+    pr_service = PRService(github_service, notification_service, config.ignore_users)
     await pr_service.report_prs(config.organization_name)
 
 

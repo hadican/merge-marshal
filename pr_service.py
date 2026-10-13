@@ -7,9 +7,11 @@ from notification_service import NotificationService
 
 
 class PRService:
-    def __init__(self, github_service: GitHubService, notification_service: NotificationService):
+    def __init__(self, github_service: GitHubService, notification_service: NotificationService,
+                 ignore_users: List[str]):
         self.github_service = github_service
         self.notification_service = notification_service
+        self.ignore_users = ignore_users
         self.batch_size = 5
 
     async def report_prs(self, organization_name: str):
@@ -42,7 +44,8 @@ class PRService:
                 return await self.github_service.get_pr_reviews(repo, pr_number)
 
         for pr in prs:
-            if pr["draft"]:
+            author = pr["user"]
+            if pr["draft"] or author["type"] == "Bot" or author["login"] in self.ignore_users:
                 continue
             created_at = datetime.strptime(pr["created_at"], "%Y-%m-%dT%H:%M:%SZ")
             if created_at < three_days_ago:
