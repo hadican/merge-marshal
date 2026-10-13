@@ -39,6 +39,9 @@ docker run -v ./author_mapping.yml:/config/author_mapping.yml \
 You need to provide an `author_mapping.yml` file located in the `/config` directory which matches GitHub usernames to
 Slack email addresses. If no match is found, then `DEFAULT_SLACK_EMAIL` is notified.
 
+PRs opened by GitHub bots (e.g. `dependabot[bot]`) and by users listed in `IGNORE_USERS` are skipped, so nobody is
+notified about them.
+
 ### Environment Variables
 
 You need to set the following environment variables:
@@ -47,6 +50,8 @@ You need to set the following environment variables:
 - `DEFAULT_SLACK_EMAIL`: This is the default email address to be notified when the author cannot be identified.
 - `GITHUB_TOKEN`: This is your GitHub token, which you can obtain [here](https://github.com/settings/tokens).
 - `GITHUB_ORGANIZATION_NAME`: This is your GitHub organization name.
+- `IGNORE_USERS` (optional): A comma-separated list of GitHub usernames whose PRs are skipped, e.g. machine users that
+  GitHub does not mark as bots.
 
 ### Build Your Own Image
 
